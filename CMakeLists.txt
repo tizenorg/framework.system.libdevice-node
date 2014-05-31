@@ -1,0 +1,72 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+PROJECT(device-node C)
+
+IF("${DEVICE}" STREQUAL "wearable")
+	OPTION(USE_WEARABLE "Use Wearable" ON)
+ELSEIF("${DEVICE}" STREQUAL "mobile")
+	OPTION(USE_MOBILE "Use Mobile" ON)
+ENDIF()
+
+SET(PREFIX ${CMAKE_INSTALL_PREFIX})
+SET(EXEC_PREFIX "${PREFIX}/bin")
+SET(LIBDIR "${PREFIX}/lib")
+SET(INCLUDEDIR "${PREFIX}/include/${PROJECT_NAME}")
+SET(VERSION 0.1)
+
+SET(INC_DIR include)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/${INC_DIR})
+
+IF(USE_MOBILE)
+SET(UDEV_RULES
+	51-devices-priv.rules
+	95-devices.rules)
+ELSE()
+SET(UDEV_RULES
+	95-tizen-devices.rules)
+ENDIF()
+
+INCLUDE(FindPkgConfig)
+pkg_check_modules(rpkgs REQUIRED dlog vconf)
+
+FOREACH(flag ${rpkgs_CFLAGS})
+	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
+ENDFOREACH(flag)
+
+SET(SRCS
+	src/device-node.c
+	src/device-plugin.c)
+
+SET(HEADERS
+	include/device-node.h
+	include/device-oal.h
+	include/devman_plugin_intf.h)
+
+INCLUDE(devices/CMakeLists.txt)
+
+SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -fvisibility=hidden")
+SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -g")
+SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -Werror")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
+
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${SRCS} ${TARGET_SRCS})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${rpkgs_LDFLAGS} "-ldl")
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SOVERSION ${VERSION})
+INSTALL(TARGETS ${PROJECT_NAME} DESTINATION lib COMPONENT RuntimeLibraries)
+
+CONFIGURE_FILE(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc DESTINATION lib/pkgconfig)
+
+# will be deprecated
+CONFIGURE_FILE(devman_plugin.pc.in devman_plugin.pc @ONLY)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/devman_plugin.pc DESTINATION lib/pkgconfig)
+
+FOREACH(hfile ${HEADERS})
+	INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${hfile} DESTINATION include/${PROJECT_NAME})
+ENDFOREACH(hfile)
+
+FOREACH(rules ${UDEV_RULES})
+	INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/udev/rules.d/${rules} DESTINATION lib/udev/rules.d)
+ENDFOREACH(rules)
+
+INSTALL(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/device-node.sh DESTINATION /etc/rc.d/init.d)
+INSTALL(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/set-safemode.sh DESTINATION /usr/bin)
