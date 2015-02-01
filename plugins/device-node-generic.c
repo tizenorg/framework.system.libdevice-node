@@ -16,12 +16,34 @@
 
 
 #include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <errno.h>
 
 #include "devman_plugin_intf.h"
+
+#ifndef DEPRECATED
+#define DEPRECATED __attribute__ ((deprecated))
+#endif
+
+#ifndef API
+#define API __attribute__ ((visibility("default")))
+#endif
+
+#define BUF_MAX	255
+
+#define BATTERY_CAPACITY_PATH		"/sys/class/power_supply/battery/capacity"
+#define BATTERY_CAPACITY_RAW_PATH	"/sys/class/power_supply/battery/capacity_raw"
+#define BATTERY_CHARGE_FULL_PATH	"/sys/class/power_supply/battery/charge_full"
+#define BATTERY_CHARGE_NOW_PATH		"/sys/class/power_supply/battery/charge_now"
+#define BATTERY_PRESENT_PATH		"/sys/class/power_supply/battery/present"
+#define BATTERY_HEALTH_PATH			"/sys/class/power_supply/battery/health"
 
 static int OEM_sys_get_display_count(int *value)
 {
@@ -198,43 +220,136 @@ static int OEM_sys_set_haptic_vibetones_oneshot(int value)
 	return 0;
 }
 
+static int read_buf(const char *file, char *buf, int size)
+{
+	int fd, r;
+
+	fd = open(file, O_RDONLY);
+	if (fd < 0)
+		return -errno;
+
+	r = read(fd, buf, size);
+	if (r < 0) {
+		r = -errno;
+		goto out;
+	} else if (r >= size) {
+		r = -ENOMEM;
+		goto out;
+	}
+
+	buf[r] = '\0';
+	r = 0;
+
+out:
+	close(fd);
+	return r;
+}
+
 static int OEM_sys_get_battery_capacity(int *value)
 {
+	char buf[BUF_MAX];
+	int r;
+
+	r = read_buf(BATTERY_CAPACITY_PATH, buf, sizeof(buf));
+	if (r < 0)
+		return r;
+
+	*value = atoi(buf);
 	return 0;
 }
 
 static int OEM_sys_get_battery_capacity_raw(int *value)
 {
+	char buf[BUF_MAX];
+	int r;
+
+	r = read_buf(BATTERY_CAPACITY_RAW_PATH, buf, sizeof(buf));
+	if (r < 0)
+		return r;
+
+	*value = atoi(buf);
 	return 0;
 }
 
 static int OEM_sys_get_battery_charge_full(int *value)
 {
+	char buf[BUF_MAX];
+	int r;
+
+	r = read_buf(BATTERY_CHARGE_FULL_PATH, buf, sizeof(buf));
+	if (r < 0)
+		return r;
+
+	*value = atoi(buf);
 	return 0;
 }
 
 static int OEM_sys_get_battery_charge_now(int *value)
 {
+	char buf[BUF_MAX];
+	int r;
+
+	r = read_buf(BATTERY_CHARGE_NOW_PATH, buf, sizeof(buf));
+	if (r < 0)
+		return r;
+
+	*value = atoi(buf);
 	return 0;
 }
 
 static int OEM_sys_get_battery_present(int *value)
 {
+	char buf[BUF_MAX];
+	int r;
+
+	r = read_buf(BATTERY_PRESENT_PATH, buf, sizeof(buf));
+	if (r < 0)
+		return r;
+
+	*value = atoi(buf);
 	return 0;
 }
 
+static const char *health_str[] = {
+	[BATTERY_UNKNOWN] = "Unknown",
+	[BATTERY_GOOD] = "Good",
+	[BATTERY_OVERHEAT] = "Overheat",
+	[BATTERY_DEAD] = "Dead",
+	[BATTERY_OVERVOLTAGE] = "Over voltage",
+	[BATTERY_UNSPECIFIED] = "Unspecified failure",
+	[BATTERY_COLD] = "Cold",
+};
+
 static int OEM_sys_get_battery_health(int *value)
 {
-	return 0;
+	char buf[BUF_MAX];
+	int i, r;
+
+	r = read_buf(BATTERY_CAPACITY_PATH, buf, sizeof(buf));
+	if (r < 0)
+		return r;
+
+	for (i = 0; i < BATTERY_HEALTH_MAX; ++i) {
+		if (!strncmp(buf, health_str[i], strlen(health_str[i]))) {
+			*value = i;
+			return 0;
+		}
+	}
+
+	return -EPERM;
 }
 
 static int OEM_sys_get_battery_polling_required(int *value)
 {
+	/* TODO : DEPRECATED */
 	return 0;
 }
 
 static int OEM_sys_get_battery_support_insuspend_charging(int *value)
 {
+	/* If the target support to enter the sleep state when charging by ta,
+	   this function is returned true. */
+	*value = true;
 	return 0;
 }
 
@@ -840,3 +955,8 @@ const OEM_sys_devman_plugin_interface default_plugin = {
 	.OEM_sys_get_extcon = OEM_sys_get_extcon,
 	.OEM_sys_set_extcon = OEM_sys_set_extcon,
 };
+
+API const OEM_sys_devman_plugin_interface *OEM_sys_get_devman_plugin_interface(void)
+{
+	return &default_plugin;
+}

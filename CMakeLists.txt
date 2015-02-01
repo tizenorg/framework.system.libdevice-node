@@ -1,12 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(device-node C)
 
-IF("${DEVICE}" STREQUAL "wearable")
-	OPTION(USE_WEARABLE "Use Wearable" ON)
-ELSEIF("${DEVICE}" STREQUAL "mobile")
-	OPTION(USE_MOBILE "Use Mobile" ON)
-ENDIF()
-
 SET(PREFIX ${CMAKE_INSTALL_PREFIX})
 SET(EXEC_PREFIX "${PREFIX}/bin")
 SET(LIBDIR "${PREFIX}/lib")
@@ -16,15 +10,6 @@ SET(VERSION 0.1)
 SET(INC_DIR include)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/${INC_DIR})
 
-IF(USE_MOBILE)
-SET(UDEV_RULES
-	51-devices-priv.rules
-	95-devices.rules)
-ELSE()
-SET(UDEV_RULES
-	95-tizen-devices.rules)
-ENDIF()
-
 INCLUDE(FindPkgConfig)
 pkg_check_modules(rpkgs REQUIRED dlog vconf)
 
@@ -33,8 +18,7 @@ FOREACH(flag ${rpkgs_CFLAGS})
 ENDFOREACH(flag)
 
 SET(SRCS
-	src/device-node.c
-	src/device-plugin.c)
+	src/device-node.c)
 
 SET(HEADERS
 	include/device-node.h
@@ -64,9 +48,8 @@ FOREACH(hfile ${HEADERS})
 	INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${hfile} DESTINATION include/${PROJECT_NAME})
 ENDFOREACH(hfile)
 
-FOREACH(rules ${UDEV_RULES})
-	INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/udev/rules.d/${rules} DESTINATION lib/udev/rules.d)
-ENDFOREACH(rules)
-
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/udev/ DESTINATION lib/udev)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/device-node.sh DESTINATION /etc/rc.d/init.d)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/set-safemode.sh DESTINATION /usr/bin)
+
+ADD_SUBDIRECTORY(plugins)

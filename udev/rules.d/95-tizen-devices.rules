@@ -19,17 +19,16 @@ KERNEL=="event*", SYMLINK+="%k"
 
 # audio, recording
 KERNEL=="radio[0-9]", GROUP="radio", SECLABEL{smack}="device::radio"
-KERNEL=="pcmC[0-9]D[0-9]c", GROUP="recording", SECLABEL{smack}="device::recording"
-KERNEL=="pcmC[0-9]D[0-9]p", GROUP="audio", SECLABEL{smack}="device::audio"
+KERNEL=="pcmC[0-9]D[0-9]*c", GROUP="recording", SECLABEL{smack}="device::recording"
+KERNEL=="pcmC[0-9]D[0-9]*p", GROUP="audio", SECLABEL{smack}="device::audio"
 KERNEL=="controlC[0-9]", GROUP="audio", SECLABEL{smack}="device::audio"
 KERNEL=="timer", SUBSYSTEM=="sound", GROUP="audio", SECLABEL{smack}="device::audio"
 KERNEL=="hwC[0-9]D[0-9]", GROUP="audio", SECLABEL{smack}="device::audio"
 
 # log
-KERNEL=="log_main", GROUP="app_logging", SECLABEL{smack}="device::app_logging"
-KERNEL=="log_events", GROUP="app_logging", SECLABEL{smack}="device::app_logging"
-KERNEL=="log_radio", GROUP="app_logging", SECLABEL{smack}="device::app_logging"
-KERNEL=="log_system", GROUP="sys_logging", SECLABEL{smack}="device::sys_logging"
+KERNEL=="log_main", OWNER="developer", MODE="0620", GROUP="app_logging", SECLABEL{smack}="device::app_logging"
+KERNEL=="log_radio", MODE="0620", GROUP="sys_logging", SECLABEL{smack}="device::sys_logging"
+KERNEL=="log_system", MODE="0620", GROUP="sys_logging", SECLABEL{smack}="device::sys_logging"
 
 KERNEL=="usb_mtp_gadget", GROUP="usb_device", SECLABEL{smack}="device::mtp"
 KERNEL=="samsung_sdb", SECLABEL{smack}="*"

@@ -2,7 +2,6 @@ Name:       libdevice-node
 Summary:    Library to control OAL APIs
 Version:    0.1.0
 Release:    6
-VCS:        framework/system/libdevice-node#submit/master/20130417.130419-72-gd80e0024adf93583b890e71138a7448e7f06781f
 Group:      System/Libraries
 License:    Apache License, Version 2.0
 Source0:    %{name}-%{version}.tar.gz
@@ -30,13 +29,7 @@ Library to control OAL APIs (devel)
 %if 0%{?tizen_build_binary_release_type_eng}
 export CFLAGS+=" -DTIZEN_ENGINEER_MODE"
 %endif
-%if "%{_repository}" == "wearable"
-%define DEVICE wearable
-%else
-%define DEVICE mobile
-%endif
-
-CFLAGS="$CFLAGS" cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DDEVICE=%{DEVICE}
+CFLAGS="$CFLAGS" cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
 make %{?jobs:-j%jobs}
 
 %install
@@ -56,7 +49,8 @@ fi
 
 %files
 %attr(700,root,root) %{_bindir}/set-safemode.sh
-%{_libdir}/*.so.*
+%{_libdir}/libdevice-node.so.*
+%{_libdir}/libdevice-node-generic.so
 %{_libdir}/udev/rules.d/*
 %{_datadir}/license/%{name}
 %attr(755,root,root) %{_sysconfdir}/rc.d/*
@@ -64,5 +58,5 @@ fi
 
 %files devel
 %{_includedir}/device-node/*.h
-%{_libdir}/*.so
+%{_libdir}/libdevice-node.so
 %{_libdir}/pkgconfig/*.pc
