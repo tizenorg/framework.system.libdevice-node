@@ -3,7 +3,7 @@ Summary:    Library to control OAL APIs
 Version:    0.1.0
 Release:    6
 Group:      System/Libraries
-License:    Apache-2.0
+License:    Apache License, Version 2.0
 Source0:    %{name}-%{version}.tar.gz
 Source1:    %{name}.manifest
 BuildRequires:  cmake

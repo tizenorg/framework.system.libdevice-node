@@ -21,6 +21,7 @@
 			<label name="device::mtp"/>
 			<label name="device::vt"/>
 			<label name="device::secure"/>
+			<label name="device::alarm"/>
 		</provide>
 	</define>
 	<assign>

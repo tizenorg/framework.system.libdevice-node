@@ -88,7 +88,7 @@ API int device_get_property(enum device_type devtype, int property, int *value)
 
 	r = dev->get_prop(property, value);
 	if (r < 0) {
-		_E("fail to get property(%s:%d) : %d", dev->name, property, -r);
+		_E("fail to get property(%s:%d) : %d", dev->name, property, r);
 		errno = -r;
 		return r;
 	}
@@ -125,7 +125,7 @@ API int device_set_property(enum device_type devtype, int property, int value)
 
 	r = dev->set_prop(property, value);
 	if (r < 0) {
-		_E("fail to set property(%s:%d) : %d", dev->name, property, -r);
+		_E("fail to set property(%s:%d) : %d", dev->name, property, r);
 		errno = -r;
 		return r;
 	}
@@ -142,13 +142,13 @@ static const OEM_sys_devman_plugin_interface *get_plugin_intf(const char *path, 
 
 	handle = dlopen(path, RTLD_NOW);
 	if (!handle) {
-		_E("dlopen(%s) failed", path);
+		_E("dlopen(%s) failed: %s", path, dlerror());
 		return NULL;
 	}
 
 	OEM_sys_get_devman_plugin_interface = dlsym(handle, "OEM_sys_get_devman_plugin_interface");
 	if (!OEM_sys_get_devman_plugin_interface) {
-		_E("dlsym() failed");
+		_E("dlsym() failed: %s", dlerror());
 		dlclose(handle);
 		return NULL;
 	}

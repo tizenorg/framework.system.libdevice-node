@@ -1,5 +1,25 @@
 # input
-SUBSYSTEM=="input", KERNEL=="mouse*|mice|event*", GROUP="input", SECLABEL{smack}="device::input"
+#SUBSYSTEM=="input", KERNEL=="mouse*|mice|event*", GROUP="input", SECLABEL{smack}="device::input"
+SUBSYSTEM=="input", KERNEL=="event0", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event0"
+SUBSYSTEM=="input", KERNEL=="event1", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event1"
+SUBSYSTEM=="input", KERNEL=="event2", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event2"
+SUBSYSTEM=="input", KERNEL=="event3", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event3"
+SUBSYSTEM=="input", KERNEL=="event4", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event4"
+SUBSYSTEM=="input", KERNEL=="event5", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event5"
+SUBSYSTEM=="input", KERNEL=="event6", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event6"
+SUBSYSTEM=="input", KERNEL=="event7", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event7"
+SUBSYSTEM=="input", KERNEL=="event8", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event8"
+SUBSYSTEM=="input", KERNEL=="event9", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event9"
+SUBSYSTEM=="input", KERNEL=="event10", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event10"
+SUBSYSTEM=="input", KERNEL=="event11", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event11"
+SUBSYSTEM=="input", KERNEL=="event12", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event12"
+SUBSYSTEM=="input", KERNEL=="event13", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event13"
+SUBSYSTEM=="input", KERNEL=="event14", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/event14"
+SUBSYSTEM=="input", KERNEL=="mouse0", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/mouse0"
+SUBSYSTEM=="input", KERNEL=="mouse1", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/mouse1"
+SUBSYSTEM=="input", KERNEL=="mice", GROUP="input", RUN+="/usr/bin/chsmack -a device::input /dev/input/mice"
+SUBSYSTEM=="input", RUN+="/bin/chmod 0664 %S/%p/enable", RUN+="/bin/chown :input %S/%p/enable", RUN+="/usr/bin/chsmack -a device::input %S/%p/enable"
+SUBSYSTEM=="input", RUN+="/bin/chmod 0664 %S/%p/poll_delay", RUN+="/bin/chown :input %S/%p/poll_delay", RUN+="/usr/bin/chsmack -a device::input %S/%p/poll_delay"
 
 # joystick
 SUBSYSTEM=="input", ENV{ID_INPUT_JOYSTICK}=="?*", SECLABEL{smack}="device::joystick"
@@ -17,6 +37,9 @@ KERNEL=="media[0-9]", MODE="0664", GROUP="video", SECLABEL{smack}="*"
 
 KERNEL=="event*", SYMLINK+="%k"
 
+# alarm
+KERNEL=="alarm", GROUP="system", SECLABEL{smack}="device::alarm"
+
 # audio, recording
 KERNEL=="radio[0-9]", GROUP="radio", SECLABEL{smack}="device::radio"
 KERNEL=="pcmC[0-9]D[0-9]*c", GROUP="recording", SECLABEL{smack}="device::recording"
@@ -26,9 +49,9 @@ KERNEL=="timer", SUBSYSTEM=="sound", GROUP="audio", SECLABEL{smack}="device::aud
 KERNEL=="hwC[0-9]D[0-9]", GROUP="audio", SECLABEL{smack}="device::audio"
 
 # log
-KERNEL=="log_main", OWNER="developer", MODE="0620", GROUP="app_logging", SECLABEL{smack}="device::app_logging"
-KERNEL=="log_radio", MODE="0620", GROUP="sys_logging", SECLABEL{smack}="device::sys_logging"
-KERNEL=="log_system", MODE="0620", GROUP="sys_logging", SECLABEL{smack}="device::sys_logging"
+KERNEL=="log_main", OWNER="log", MODE="0660", GROUP="app_logging", SECLABEL{smack}="device::app_logging"
+KERNEL=="log_radio", OWNER="log", MODE="0620", GROUP="sys_logging", SECLABEL{smack}="device::sys_logging"
+KERNEL=="log_system", OWNER="log", MODE="0620", GROUP="sys_logging", SECLABEL{smack}="device::sys_logging"
 
 KERNEL=="usb_mtp_gadget", GROUP="usb_device", SECLABEL{smack}="device::mtp"
 KERNEL=="samsung_sdb", SECLABEL{smack}="*"
@@ -41,6 +64,9 @@ KERNEL=="uio[0-9]", MODE="0666", SECLABEL{smack}="*"
 
 # RFCOMM TTY
 KERNEL=="rfcomm[0-9]", SECLABEL{smack}="device::dialout"
+
+# dun
+KERNEL=="dun", GROUP="system", SECLABEL{smack}="*"
 
 KERNEL=="mobicore-user", SECLABEL{smack}="*"
 
